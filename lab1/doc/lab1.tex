@@ -1,0 +1,51 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{shorttoc}
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+\graphicspath{{./images/}}
+
+\definecolor{linkcolor}{HTML}{000000}
+\definecolor{urlcolor}{HTML}{0085FF}
+\hypersetup{pdfstartview=FitH,  linkcolor=linkcolor,urlcolor=urlcolor, colorlinks=true}
+
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\renewcommand*\contentsname{Содержание}
+
+
+\begin{document}
+    \include{title}
+    \newpage
+
+    \tableofcontents
+    \newpage
+
+    \section{Постановка задачи}
+
+    \quad Нужно реализовать систему из двух объектов - отправителя (Sender) и получателя (Receiver),
+    которые будут обменеваться сообщениями по каналу связи с помощью протоколов автоматического запроса повторений передачи
+    с плавающим окном: Go-Back-N и Selective Repeat.
+
+    Необходимо выяснить зависимость времени работы и количесвто посланных сообщений от размера плавающего окна 
+    и вероятности потерисообщения для каждого протокола и сравнить друг с другом.
+
+    \section{Реализация}
+
+    \quad Весь код написан на языкe Python (версии 3.7.3).
+    Для каждого протокола получатель и отправитель работают параллельно в отдельных потоках.
+    
+
+    \section{Результаты}
+
+    \section{Обсуждение}
+
+\end{document}

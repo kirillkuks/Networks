@@ -1,0 +1,10 @@
+*.aux
+*.fdb_latexmk
+*.fls
+*.txt
+*.out
+*.gz
+*.toc
+*.log
+
+/lab1/__pycache__
