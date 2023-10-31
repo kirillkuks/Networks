@@ -11,9 +11,9 @@
 \usepackage{xcolor}
 \usepackage{graphicx}
 \usepackage{float}
-\graphicspath{{./images/}}
+\graphicspath{{./img/}}
 
-\definecolor{linkcolor}{HTML}{000000}
+\definecolor{linkcolor}{HTML}{0085FF}
 \definecolor{urlcolor}{HTML}{0085FF}
 \hypersetup{pdfstartview=FitH,  linkcolor=linkcolor,urlcolor=urlcolor, colorlinks=true}
 
@@ -21,6 +21,15 @@
 
 \renewcommand*\contentsname{Содержание}
 
+\newcommand{\plot}[3]{
+    \begin{figure}[H]
+        \begin{center}
+            \includegraphics[scale=0.6]{#1}
+            \caption{#2}
+            \label{#3}
+        \end{center}
+    \end{figure}
+}
 
 \begin{document}
     \include{title}
@@ -42,9 +51,49 @@
 
     \quad Весь код написан на языкe Python (версии 3.7.3).
     Для каждого протокола получатель и отправитель работают параллельно в отдельных потоках.
-    
+    \href{https://github.com/kirillkuks/Networks/tree/master/lab1}{Ссылка на GitHub с исходным кодом}.
 
     \section{Результаты}
+    \quad Введём две основные метрики, по которым будем сравнивать оба протокола:
+    число сообщений, которые пришлось отправить отправителю, 
+    и время работы протокола, за которое получатель смог получить все сообщения без повреждений.
+    Посмотрим на зависиость этих метри от 
+    размера окна, времени таймаута и вероятности потери сообщения.
+    
+    Во всех тестах (если не сказано обратное) число сообщений, которые получатель должен получить от отправителя равно 100,
+    а таймаут равен $ 0.5 $. Замеры времени работы проводились на CPU Intel I7-7700HQ 2.80GHz.
+
+    Сначала посмотрим на зависимость числа сообщений и времени работы от размера таймаута.
+    Размер окна равен 10, сообщение не может быть поврежденно \ref{p:timeoutsMessageNum} и \ref{p:timeoutsWorkingTime}.
+
+    \plot{timeoutsMessageNum}{Число сообщений от таймаута (размер окна = 10, вероятность повреждения сообщения = 0.0)}{p:timeoutsMessageNum}
+    \plot{timeoutsWorkingTime}{Время работы от таймаута (размер окна = 10, вероятность повреждения сообщения = 0.0)}{p:timeoutsWorkingTime}
+
+    Видно, что при очень малых значениях таймаута, отправитель для некоторых сообщений не успеевает получить от получателя
+    подтверждения до истечения времени ожидания, из-за чего посылает повторные сообщения.
+    Но с увеличением времени таймаута такие случаи пропадают и число всех отправленных сообщений равно число успешно переданных сообщений.
+
+    Теперь рассмотрим значения числа всех отправленных сообщений и времени работы в зависимости от размера окна и вероятности ошибки
+    Сначала для протокола Go-Back-N.
+
+    \plot{rateSizeGBNMessageNum}{Число сообщений от размера окна}{p:rateSizeGBNMessageNum}
+    \plot{rateSizeGBNWorkingTime}{Время работы от размера окна}{p:rateSizeGBNWorkingTime}
+
+    Затем для протокола Selective Repeat.
+
+    \plot{rateSizeSRPMessageNum}{Число сообщений от размера окна}{p:rateSizeSRPMessageNum}
+    \plot{rateSizeSRPWorkingTime}{Время работы от размера окна}{p:rateSizeSRPWorkingTime}
+
+    Также рассмотрим зависимости тех же метрик от вероятности потери сообщения.
+    Для Go-Back-N имеем.
+
+    \plot{sizeRateGBNMessageNum}{Число сообщений от вероятности потери сообщения}{p:sizeRateGBNMessageNum}
+    \plot{sizeRateGBNWorkingTime}{Время работы от вероятности потери сообщения}{p:sizeRateGBNWorkingTime}
+
+    А для Selective Repeat.
+    
+    \plot{sizeRateSRPMessageNum}{Число сообщений от вероятности потери сообщения}{p:sizeRateSRPMessageNum}
+    \plot{sizeRateSRPWorkingTime}{Время работы от вероятности потери сообщения}{p:sizeRateSRPWorkingTime}
 
     \section{Обсуждение}
 
