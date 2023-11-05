@@ -6,5 +6,6 @@
 *.gz
 *.toc
 *.log
+*.lof
 
 /lab1/__pycache__
