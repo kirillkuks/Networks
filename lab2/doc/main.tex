@@ -1,0 +1,260 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{shorttoc}
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+\graphicspath{{./img/}}
+
+\definecolor{linkcolor}{HTML}{000000}
+\definecolor{urlcolor}{HTML}{0085FF}
+\hypersetup{pdfstartview=FitH,  linkcolor=linkcolor,urlcolor=urlcolor, colorlinks=true}
+
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\renewcommand*\contentsname{Содержание}
+
+\newcommand{\plot}[3]{
+    \begin{figure}[H]
+        \begin{center}
+            \includegraphics[scale=0.6]{#1}
+            \caption{#2}
+            \label{#3}
+        \end{center}
+    \end{figure}
+}
+
+\begin{document}
+    \include{title}
+    \newpage
+
+    \tableofcontents
+    \listoffigures
+    \newpage
+
+    \section{Постановка задачи}
+    \quad Нужно реализовать протокол маршрутизации OSPF (Open Shortest Path First).
+    И проверить его работоспособность на следующих видах топологий сети:
+    линейная, кольцевидная и звёздная.
+
+    \section{Теория}
+    OSPF (Open Shortest Path First) — протокол динамической маршрутизации,
+    основанный на технологии отслеживания состояния канала
+    и использующий для нахождения кратчайшего пути алгоритм Дейкстры.
+
+    Описание работы протокола.
+    \begin{itemize}
+        \item После включения маршрутизаторов протокол ищет непосредственно подключенных соседей
+        и устанавливает с ними «дружеские» отношения.
+        \item Затем они обмениваются друг с другом информацией о подключенных и доступных им сетях.
+        То есть они строят карту сети (топологию сети).
+        Данная карта одинакова на всех маршрутизаторах.
+        \item На основе полученной информации запускается алгоритм SPF (Shortest Path First),
+        который рассчитывает оптимальный маршрут к каждой сети.
+        Данный процесс похож на построение дерева, корнем которого является сам маршрутизатор,
+        а ветвями — пути к доступным сетям.
+    \end{itemize}
+
+    \section{Реализация}
+    \quad Весь код написан на языке Python (версии 3.7.3).
+    Для каждого протокола получатель и отправитель работают параллельно в отдельных потоках.
+    \href{https://github.com/kirillkuks/Networks/tree/master/lab2}{Ссылка на GitHub с исходным кодом}.
+
+    \section{Результаты}
+    Сначала посмотрим на работу протокола на сети с линейной топологией.
+    Узлы сети имеют следующее расположение.
+    \plot{full_line_points}{Расположение узлов сети с линейной топологией}{p:fullLinePoints}
+
+    Построим граф сети, указав радиус соединения равным $ r = 1.5 $.
+    \plot{full_line}{Граф сети с линейной топологией}{p:fullLine}
+
+    Найдём кратчайшие пути между всеми парами узлов сети.
+    Приведём некоторые примеры (полные результаты в файле \textsl{lab2/results/line\_full.txt}).
+    \begin{itemize}
+        \item Начальный узел $ 0 $
+        \begin{itemize}
+            \item path 0 -> 1: [0, 1]
+            \item path 0 -> 2: [0, 1, 2]
+            \item path 0 -> 3: [0, 1, 2, 3]
+            \item path 0 -> 4: [0, 1, 2, 3, 4]
+            \item path 0 -> 5: [0, 1, 2, 3, 4, 5]
+        \end{itemize} 
+        \item Начальный узел $ 4 $
+        \begin{itemize}
+            \item path 4 -> 0: [4, 3, 2, 1, 0]
+            \item path 4 -> 1: [4, 3, 2, 1]
+            \item path 4 -> 2: [4, 3, 2]
+            \item path 4 -> 3: [4, 3]
+            \item path 4 -> 5: [4, 5]
+        \end{itemize} 
+    \end{itemize}
+
+    Теперь уберём из сети узел $ 3 $ (перенеся его достаточно далеко)
+    и перестроим граф сети.
+    \plot{rm_line}{Граф сети с линейной топологией без $ 3 $ узла}{p:rmLine}
+
+    Приведём кратчайшие пути для тех же пар узлов (полные результаты в файле \textsl{lab2/results/line\_remove.txt}).
+    \begin{itemize}
+        \item Начальный узел $ 0 $
+        \begin{itemize}
+            \item path 0 -> 1: [0, 1]
+            \item path 0 -> 2: [0, 1, 2]
+            \item path 0 -> 3: []
+            \item path 0 -> 4: []
+            \item path 0 -> 5: []
+        \end{itemize} 
+        \item Начальный узел $ 4 $
+        \begin{itemize}
+            \item path 4 -> 0: []
+            \item path 4 -> 1: []
+            \item path 4 -> 2: []
+            \item path 4 -> 3: []
+            \item path 4 -> 5: [4, 5]
+        \end{itemize} 
+    \end{itemize}
+
+    Проведём аналогичную процедуру для сети с кольцевидной топологией.
+    \plot{full_ring_points}{Расположение узлов сети с кольцевидной топологией}{p:fullRingPoints}
+
+    Граф, построенный с радиусом соединения $ r = 1.7 $, сети имеет вид.
+    \plot{full_ring}{Граф сети с кольцевидной топологией}{p:fullRing}
+
+    Примеры кратчайших путей (подробнее \textsl{lab2/results/ring\_full.txt})
+    \begin{itemize}
+        \item Начальный узел $ 5 $
+        \begin{itemize}
+            \item path 5 -> 0: [5, 3, 1, 0]
+            \item path 5 -> 1: [5, 3, 1]
+            \item path 5 -> 2: [5, 3, 1, 0, 2]
+            \item path 5 -> 3: [5, 3]
+            \item path 5 -> 4: [5, 3, 1, 0, 2, 4]
+            \item path 5 -> 6: [5, 3, 1, 0, 2, 4, 6]
+            \item path 5 -> 7: [5, 7]
+            \item path 5 -> 8: [5, 3, 1, 0, 2, 4, 6, 8]
+            \item path 5 -> 9: [5, 7, 14, 12, 10, 9]
+            \item path 5 -> 10: [5, 7, 14, 12, 10]
+            \item path 5 -> 11: [5, 7, 14, 12, 10, 9, 11]
+            \item path 5 -> 12: [5, 7, 14, 12]
+            \item path 5 -> 13: [5, 7, 14, 12, 10, 9, 11, 13]
+            \item path 5 -> 14: [5, 7, 14]
+            \item path 5 -> 15: [5, 7, 14, 12, 10, 9, 11, 13, 15]
+        \end{itemize}
+        \item Начальный узел $ 12 $
+        \begin{itemize}
+            \item path 12 -> 0: [12, 14, 7, 5, 3, 1, 0]
+            \item path 12 -> 1: [12, 14, 7, 5, 3, 1]
+            \item path 12 -> 2: [12, 14, 7, 5, 3, 1, 0, 2]
+            \item path 12 -> 3: [12, 14, 7, 5, 3]
+            \item path 12 -> 4: [12, 14, 7, 5, 3, 1, 0, 2, 4]
+            \item path 12 -> 5: [12, 14, 7, 5]
+            \item path 12 -> 6: [12, 10, 9, 11, 13, 15, 8, 6]
+            \item path 12 -> 7: [12, 14, 7]
+            \item path 12 -> 8: [12, 10, 9, 11, 13, 15, 8]
+            \item path 12 -> 9: [12, 10, 9]
+            \item path 12 -> 10: [12, 10]
+            \item path 12 -> 11: [12, 10, 9, 11]
+            \item path 12 -> 13: [12, 10, 9, 11, 13]
+            \item path 12 -> 14: [12, 14]
+            \item path 12 -> 15: [12, 10, 9, 11, 13, 15]
+        \end{itemize}
+    \end{itemize}
+
+    После удаления узла $ 11 $ граф сети имеет вид.
+    \plot{rm_ring}{Граф сети с кольцевидной топологией без $ 11 $ узла}{p:rmRing}
+
+    Примеры путей для тех же пар узлов (подробнее \textsl{lab2/results/ring\_remove.txt})
+    \begin{itemize}
+        \item Начальный узел $ 5 $
+        \begin{itemize}
+            \item path 5 -> 0: [5, 3, 1, 0]
+            \item path 5 -> 1: [5, 3, 1]
+            \item path 5 -> 2: [5, 3, 1, 0, 2]
+            \item path 5 -> 3: [5, 3]
+            \item path 5 -> 4: [5, 3, 1, 0, 2, 4]
+            \item path 5 -> 6: [5, 3, 1, 0, 2, 4, 6]
+            \item path 5 -> 7: [5, 7]
+            \item path 5 -> 8: [5, 3, 1, 0, 2, 4, 6, 8]
+            \item path 5 -> 9: [5, 7, 14, 12, 10, 9]
+            \item path 5 -> 10: [5, 7, 14, 12, 10]
+            \item path 5 -> 11: []
+            \item path 5 -> 12: [5, 7, 14, 12]
+            \item path 5 -> 13: [5, 3, 1, 0, 2, 4, 6, 8, 15, 13]
+            \item path 5 -> 14: [5, 7, 14]
+            \item path 5 -> 15: [5, 3, 1, 0, 2, 4, 6, 8, 15]
+        \end{itemize}
+        \item Начальный узел $ 12 $
+        \begin{itemize}
+            \item path 12 -> 0: [12, 14, 7, 5, 3, 1, 0]
+            \item path 12 -> 1: [12, 14, 7, 5, 3, 1]
+            \item path 12 -> 2: [12, 14, 7, 5, 3, 1, 0, 2]
+            \item path 12 -> 3: [12, 14, 7, 5, 3]
+            \item path 12 -> 4: [12, 14, 7, 5, 3, 1, 0, 2, 4]
+            \item path 12 -> 5: [12, 14, 7, 5]
+            \item path 12 -> 6: [12, 14, 7, 5, 3, 1, 0, 2, 4, 6]
+            \item path 12 -> 7: [12, 14, 7]
+            \item path 12 -> 8: [12, 14, 7, 5, 3, 1, 0, 2, 4, 6, 8]
+            \item path 12 -> 9: [12, 10, 9]
+            \item path 12 -> 10: [12, 10]
+            \item path 12 -> 11: []
+            \item path 12 -> 13: [12, 14, 7, 5, 3, 1, 0, 2, 4, 6, 8, 15, 13]
+            \item path 12 -> 14: [12, 14]
+            \item path 12 -> 15: [12, 14, 7, 5, 3, 1, 0, 2, 4, 6, 8, 15]
+        \end{itemize}
+    \end{itemize}
+
+    Узлы сети со звёздной топологией и центральным узлом $ 0 $ имеют следующее расположение.
+    \plot{full_star_points}{Расположение узлов сети с звёздной топологией}{p:fullStarPoints}
+
+    Граф для данной сети имеет вид.
+    \plot{full_star}{Граф сети с звёздной топологией}{p:fullStar}
+
+    Некоторые примеры кратчайший путей (подробнее \textsl{lab2/results/star\_full.txt}).
+    \begin{itemize}
+        \item Начальный узел $ 0 $
+        \begin{itemize}
+            \item path 0 -> 1: [0, 1]
+            \item path 0 -> 2: [0, 2]
+            \item path 0 -> 3: [0, 3]
+            \item path 0 -> 4: [0, 4]
+            \item path 0 -> 5: [0, 5]
+            \item path 0 -> 6: [0, 6]
+            \item path 0 -> 7: [0, 7]
+            \item path 0 -> 8: [0, 8]
+        \end{itemize}
+        \item Начальный узел $ 7 $
+        \begin{itemize}
+            \item path 7 -> 0: [7, 0]
+            \item path 7 -> 1: [7, 0, 1]
+            \item path 7 -> 2: [7, 0, 2]
+            \item path 7 -> 3: [7, 0, 3]
+            \item path 7 -> 4: [7, 0, 4]
+            \item path 7 -> 5: [7, 0, 5]
+            \item path 7 -> 6: [7, 0, 6]
+            \item path 7 -> 8: [7, 0, 8]
+        \end{itemize}
+    \end{itemize}
+
+    После удаления центрального узла $ 0 $ граф сети имеет вид.
+    \plot{rm_star}{Граф сети с звёздной топологией без центрального узла $ 0 $}{p:rmStar}
+
+    Путей для тех же пар узлов (подробнее \textsl{lab2/results/star\_remove.txt})
+    не будет существовать.
+
+    \section{Обсуждение}
+    Из полученных результатов можно заметить следующее.
+    Сеть с линейной топологией наиболее чувствительна к потерям
+    узлов сети, потеря одного узла ведёт к появлению недостижимых узлов.
+    Сеть с кольцевидной топологией менее чувствительна к потерям узлов,
+    при потере одного узла она переходит в сеть с линейной топологией.
+    Сеть со звёздной топологией наименее чувствительна к потере узлов до тех пор,
+    пока это не центральный узел.
+    В случае потери центрального узла любая пара других узлов становится недостижима. 
+
+\end{document}
